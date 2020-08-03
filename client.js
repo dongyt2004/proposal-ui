@@ -22,7 +22,7 @@ app.get("/", function (req, res) {
 
 app.post("/", function (req, res) {
     request.post({
-        url: "http://proposal.ruoben.com:8008",
+        url: "http://proposal-svc:8080",
         headers: {
             "Content-Type": "application/json"
         },
