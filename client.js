@@ -22,22 +22,24 @@ app.get("/", function (req, res) {
 
 app.post("/", function (req, res) {
     request.post({
-        url: "http://proposal-svc:8080",
+        url: "http://proposal-svc:8080",  // http://proposal.ruoben.com
         headers: {
             "Content-Type": "application/json"
         },
         json: true,
         body: {text: req.body.title + '!@#' + req.body.content.replace('\n', '\\n')},
         timeout: 60000
-    }, function (err, res1, text) {
+    }, function (err, res1, json) {
         if (err) {
             console.error(err.toString());
             res.header('Content-Type', 'text/plain; charset=utf-8').status(500).end(err.toString());
         } else {
             if (res1.statusCode === 200) {
                 console.log('------------------------------------------------------------------------------------------------')
-                console.log(text);
-                res.header('Content-Type', 'text/plain; charset=utf-8').status(200).end(text.replace(/\n/g, '<br>'));
+                console.log(json);
+                var blank = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                var text = "主题词：" + json.topic.replace(/\|/g, blank) + "<br>承办单位：" + json.unit.replace(/\|/g, blank);
+                res.header('Content-Type', 'text/plain; charset=utf-8').status(200).end(text);
             } else {
                 console.error("调用proposal接口报错");
                 res.header('Content-Type', 'text/plain; charset=utf-8').status(500).end("调用proposal接口报错");
