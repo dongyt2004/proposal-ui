@@ -36,10 +36,47 @@ app.post("/", function (req, res) {
         } else {
             if (res1.statusCode === 200) {
                 console.log('------------------------------------------------------------------------------------------------')
-                console.log(json);
+                console.log(json);  //////////////
                 var blank = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                var text = "主题词：" + json.topic.replace(/\|/g, blank) + "<br>承办单位：" + json.unit.replace(/\|/g, blank);
-                res.header('Content-Type', 'text/plain; charset=utf-8').status(200).end(text);
+                var text = "主题词：";
+                var topics = json.topic.split("|");
+                for(var i=0; i<topics.length; i++) {
+                    var keyword_scores = topics[i].split("@");
+                    text += keyword_scores[0] + blank;
+                }
+                var data = [];
+                var scores = [];
+                var topic_12s = json.topic_12.split("|");
+                for(i=0; i<topic_12s.length; i++) {
+                    keyword_scores = topic_12s[i].split("@");
+                    data.push({keyword: keyword_scores[0], score:parseFloat(keyword_scores[1])});
+                    scores.push(parseFloat(keyword_scores[1]));
+                }
+                var min = Math.min.apply(null, scores);
+                var d = Math.max.apply(null, scores) - min;
+                for(i=0; i<data.length; i++) {
+                    data[i].score = (data[i].score - min) / d * 10 + 10;
+                }
+                text += "<br>承办单位：";
+                var untis = json.unit.split("|");
+                for(i=0; i<untis.length; i++) {
+                    var unit_scores = untis[i].split("@");
+                    text += unit_scores[0] + blank;
+                }
+                var data1 = [];
+                scores = [];
+                var unit_12s = json.unit_12.split("|");
+                for(i=0; i<unit_12s.length; i++) {
+                    unit_scores = unit_12s[i].split("@");
+                    data1.push({unit: unit_scores[0], score:parseFloat(unit_scores[1])});
+                    scores.push(parseFloat(unit_scores[1]));
+                }
+                min = Math.min.apply(null, scores);
+                d = Math.max.apply(null, scores) - min;
+                for(i=0; i<data1.length; i++) {
+                    data1[i].score = (data1[i].score - min) / d * 10 + 10;
+                }
+                res.header('Content-Type', 'text/plain; charset=utf-8').status(200).json({text: text, data: data, data1: data1});
             } else {
                 console.error("调用proposal接口报错");
                 res.header('Content-Type', 'text/plain; charset=utf-8').status(500).end("调用proposal接口报错");
@@ -47,4 +84,4 @@ app.post("/", function (req, res) {
         }
     });
 });
-app.listen(1080, '0.0.0.0');
+app.listen(2080, '0.0.0.0');

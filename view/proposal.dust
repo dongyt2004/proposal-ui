@@ -7,37 +7,45 @@
     <link type="text/css" rel="stylesheet" href="/bootstrap.min.css" />
     <style type="text/css">
         #keyword_container {
-            height: 250px;
+            height: 60px;
+            padding: 10px;
             border: solid 1px #ccc;
             background: #f4f4f4;
         }
     </style>
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g2-3.5.1/dist/g2.min.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.10.1/dist/data-set.min.js"></script>
 </head>
 <body>
-<div class="row" style="margin:20px 15px 0;">
+<div class="row" style="margin:10px 15px 0;">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: center;">
         <h2 style="color:black"> <strong>智能提案分拣系统</strong> </h2>
     </div>
 </div>
-<div class="row" style="margin:20px 15px 0;">
+<div class="row" style="margin:10px 15px 0;">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <input type="text" id="input0" class="form-control" style="width:100%; height: 30px;" placeholder="请填写提案标题"></input>
     </div>
 </div>
-<div class="row" style="margin:15px;">
+<div class="row" style="margin:10px 15px 0;">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <textarea id="input1" rows="10" class="form-control" style="width:100%;" placeholder="请填写提案内容"></textarea>
+        <textarea id="input1" rows="9" class="form-control" style="width:100%;" placeholder="请填写提案内容"></textarea>
     </div>
 </div>
-<div class="row" style="margin:15px;">
+<div class="row" style="margin:10px 15px 0;">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <button onclick="tijiao()" type="button" class="btn btn-primary center-block">显示主题词和承办单位</button>
     </div>
 </div>
-<div class="row" style="margin:15px;">
+<div class="row" style="margin:10px 15px 0;">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div id="keyword_container" class="form-control"></div>
-        <input type='hidden' value='' id='sum_obj'/>
+        <div id="keyword_container" class="form-control" style="font-weight: bold; font-size: medium;"></div>
+    </div>
+</div>
+<div class="row" style="margin:10px 15px 0;">
+    <div id="keyword_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6" style="display: flex; align-items: center; height: 300px; overflow: hidden;">
+    </div>
+    <div id="unit_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6" style="display: flex; align-items: center; height: 300px; overflow: hidden;">
     </div>
 </div>
 <div class="modal" id="loadingModal" data-backdrop="static" data-keyboard="false">
@@ -66,8 +74,66 @@
             title: $("#input0").val(),
             content: $("#input1").val()
         }, function(result) {
+            result = eval("(" + result + ")");
+            console.log(result);
             $('#loadingModal').modal('hide');
-            $('#keyword_container')[0].innerHTML = result;
+            $('#keyword_container')[0].innerHTML = result.text;
+
+            var chart = new G2.Chart({
+                container: 'keyword_chart',
+                forceFit: true,
+                height: 300,
+                padding: ['auto', 220, 'auto', 0]
+            });
+            chart.source(result.data);
+            chart.coord('polar', {
+                radius: 0.7,
+                innerRadius: 0.12
+            }).scale(1.2, 1.2);
+            chart.legend({
+                position: 'right',
+                offsetY: 0,
+                offsetX: -120,
+                textStyle: {
+                    fill: '#404040',
+                    fontSize: '13',
+                    fontWeight: 'bold'
+                }
+            });
+            chart.axis(false);
+            chart.interval().position('keyword*score').color('keyword', G2.Global.colors_pie_16).style({
+                lineWidth: 1,
+                stroke: '#fff'
+            });
+            chart.render();
+
+            var chart1 = new G2.Chart({
+                container: 'unit_chart',
+                forceFit: true,
+                height: 300,
+                padding: ['auto', 220, 'auto', 0]
+            });
+            chart1.source(result.data1);
+            chart1.coord('polar', {
+                radius: 0.7,
+                innerRadius: 0.12
+            }).scale(1.1, 1.1);
+            chart1.legend({
+                position: 'right',
+                offsetY: 0,
+                offsetX: -120,
+                textStyle: {
+                    fill: '#404040',
+                    fontSize: '13',
+                    fontWeight: 'bold'
+                }
+            });
+            chart1.axis(false);
+            chart1.interval().position('unit*score').color('unit', G2.Global.colors_pie_16).style({
+                lineWidth: 1,
+                stroke: '#fff'
+            });
+            chart1.render();
         });
     }
 </script>
