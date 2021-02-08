@@ -117,7 +117,7 @@
             chart1.coord('polar', {
                 radius: 0.7,
                 innerRadius: 0.12
-            }).scale(1.1, 1.1);
+            }).scale(1.2, 1.2);
             chart1.legend({
                 position: 'right',
                 offsetY: 0,
