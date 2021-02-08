@@ -53,17 +53,13 @@
     <div id="unit_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
     </div>
 </div>
-<div class="modal" id="loadingModal" data-backdrop="static" data-keyboard="false">
-    <div style="width: 200px;height:20px; z-index: 20000; position: absolute; text-align: center; left: 50%; top: 50%; margin-left:-100px; margin-top:-10px">
-        <div class="progress progress-striped active" style="margin-bottom: 0;">
-            <div class="progress-bar" style="width: 100%;"></div>
-        </div>
-        <h5 style="color:black"> <strong>提案小秘书正在处理，请稍等...</strong> </h5>
-    </div>
-</div>
 <script type="text/javascript" src="/jquery.min.js"></script>
 <script type="text/javascript" src="/bootstrap.min.js"></script>
 <script type="text/javascript">
+    var tree_chart_object = null;
+    var keyword_chart_object = null;
+    var unit_chart_object = null;
+
     function tijiao() {
         if ($("#input0").val() == "") {
             alert("请填写提案标题");
@@ -74,16 +70,20 @@
             return;
         }
         $('#keyword_container')[0].innerHTML = "";
-        $("#loadingModal").modal('show');
+        tree_chart_object = null;
+        $('#tree_chart')[0].innerHTML = "";
+        keyword_chart_object = null;
+        $('#keyword_chart')[0].innerHTML = "";
+        unit_chart_object = null;
+        $('#unit_chart')[0].innerHTML = "";
         $.post("/", {
             title: $("#input0").val(),
             content: $("#input1").val()
         }, function(result) {
             result = eval("(" + result + ")");
             console.log(result);
-            $('#loadingModal').modal('hide');
             $('#keyword_container')[0].innerHTML = result.text;
-
+            /* ************************************************************ */
             $.getJSON('/data.json', function(data) {
                 var dv = new DataSet.View().source(data, {
                     type: 'hierarchy'
@@ -92,16 +92,15 @@
                     type: 'hierarchy.circle-packing'
                 });
                 var diameter = 600;
-                var chart = new G2.Chart({
+                tree_chart_object = new G2.Chart({
                     container: 'tree_chart',
                     height: diameter,
-                    width: diameter + 50,
-                    padding: ['auto', 0, 'auto', 160]
+                    width: diameter,
+                    padding: ['auto', 0, 'auto', 30]
                 });
-                chart.axis(false);
-                chart.legend(false);
-                chart.tooltip(false);
-
+                tree_chart_object.axis(false);
+                tree_chart_object.legend(false);
+                tree_chart_object.tooltip(false);
                 var nodes = dv.getAllNodes().map(function(node) {
                     return {
                         hasChildren: !!(node.data.children && node.data.children.length),
@@ -113,11 +112,11 @@
                         r: node.r
                     };
                 });
-                chart.source(nodes);
-                chart.point().position('x*y').color('hasChildren').shape('circle').tooltip('name').active(false).size('r', function(r) {
+                tree_chart_object.source(nodes);
+                tree_chart_object.point().position('x*y').color('hasChildren').shape('circle').tooltip('name').active(false).size('r', function(r) {
                     return r * diameter;
-                }).color('r', 'rgb(252, 253, 191)-rgb(231, 82, 99)-rgb(183, 55, 121)').style({
-                    stroke: 'rgb(183, 55, 121)'
+                }).color('r', 'rgb(252, 253, 191)-rgb(183, 55, 121)--rgb(255, 255, 255)').style({
+                    stroke: 'rgb(255, 255, 255)'
                 }).label('name', {
                     offset: 0,
                     textStyle: function textStyle(text, item) {
@@ -134,22 +133,21 @@
                         };
                     }
                 });
-                chart.render();
+                tree_chart_object.render();
             });
-
             /* ************************************************************ */
-            var chart = new G2.Chart({
+            keyword_chart_object = new G2.Chart({
                 container: 'keyword_chart',
                 forceFit: true,
                 height: 300,
                 padding: ['auto', 220, 'auto', 0]
             });
-            chart.source(result.data);
-            chart.coord('polar', {
+            keyword_chart_object.source(result.data);
+            keyword_chart_object.coord('polar', {
                 radius: 0.7,
                 innerRadius: 0.12
             }).scale(1.2, 1.2);
-            chart.legend({
+            keyword_chart_object.legend({
                 position: 'right',
                 offsetY: 0,
                 offsetX: -120,
@@ -159,25 +157,25 @@
                     fontWeight: 'bold'
                 }
             });
-            chart.axis(false);
-            chart.interval().position('keyword*score').color('keyword', G2.Global.colors_pie_16).style({
+            keyword_chart_object.axis(false);
+            keyword_chart_object.interval().position('keyword*score').color('keyword', G2.Global.colors_pie_16).style({
                 lineWidth: 1,
                 stroke: '#fff'
             });
-            chart.render();
-
-            var chart1 = new G2.Chart({
+            keyword_chart_object.render();
+            /* ************************************************************ */
+            unit_chart_object = new G2.Chart({
                 container: 'unit_chart',
                 forceFit: true,
                 height: 300,
                 padding: ['auto', 220, 'auto', 0]
             });
-            chart1.source(result.data1);
-            chart1.coord('polar', {
+            unit_chart_object.source(result.data1);
+            unit_chart_object.coord('polar', {
                 radius: 0.7,
                 innerRadius: 0.12
             }).scale(1.2, 1.2);
-            chart1.legend({
+            unit_chart_object.legend({
                 position: 'right',
                 offsetY: 0,
                 offsetX: -120,
@@ -187,12 +185,12 @@
                     fontWeight: 'bold'
                 }
             });
-            chart1.axis(false);
-            chart1.interval().position('unit*score').color('unit', G2.Global.colors_pie_16).style({
+            unit_chart_object.axis(false);
+            unit_chart_object.interval().position('unit*score').color('unit', G2.Global.colors_pie_16).style({
                 lineWidth: 1,
                 stroke: '#fff'
             });
-            chart1.render();
+            unit_chart_object.render();
         });
     }
 </script>

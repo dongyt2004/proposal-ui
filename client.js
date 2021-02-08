@@ -24,7 +24,7 @@ app.get("/", function (req, res) {
 
 app.post("/", function (req, res) {
     request.post({
-        url: "http://proposal-svc:8080",  // http://proposal.ruoben.com
+        url: "http://proposal.ruoben.com",  // http://proposal-svc:8080
         headers: {
             "Content-Type": "application/json"
         },
