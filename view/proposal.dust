@@ -15,6 +15,7 @@
     </style>
     <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g2-3.5.1/dist/g2.min.js"></script>
     <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.10.1/dist/data-set.min.js"></script>
+    <script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
 </head>
 <body>
 <div class="row" style="margin:10px 15px 0;">
@@ -43,9 +44,13 @@
     </div>
 </div>
 <div class="row" style="margin:10px 15px 0;">
-    <div id="keyword_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6" style="display: flex; align-items: center; height: 300px; overflow: hidden;">
+    <div id="tree_chart" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="text-align: center;">
     </div>
-    <div id="unit_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6" style="display: flex; align-items: center; height: 300px; overflow: hidden;">
+</div>
+<div class="row" style="margin:10px 15px 0;">
+    <div id="keyword_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+    </div>
+    <div id="unit_chart" class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
     </div>
 </div>
 <div class="modal" id="loadingModal" data-backdrop="static" data-keyboard="false">
@@ -79,6 +84,60 @@
             $('#loadingModal').modal('hide');
             $('#keyword_container')[0].innerHTML = result.text;
 
+            $.getJSON('/data.json', function(data) {
+                var dv = new DataSet.View().source(data, {
+                    type: 'hierarchy'
+                });
+                dv.transform({
+                    type: 'hierarchy.circle-packing'
+                });
+                var diameter = 600;
+                var chart = new G2.Chart({
+                    container: 'tree_chart',
+                    height: diameter,
+                    width: diameter + 50,
+                    padding: ['auto', 0, 'auto', 160]
+                });
+                chart.axis(false);
+                chart.legend(false);
+                chart.tooltip(false);
+
+                var nodes = dv.getAllNodes().map(function(node) {
+                    return {
+                        hasChildren: !!(node.data.children && node.data.children.length),
+                        name: node.data.name,
+                        value: node.value,
+                        depth: node.depth,
+                        x: node.x,
+                        y: node.y,
+                        r: node.r
+                    };
+                });
+                chart.source(nodes);
+                chart.point().position('x*y').color('hasChildren').shape('circle').tooltip('name').active(false).size('r', function(r) {
+                    return r * diameter;
+                }).color('r', 'rgb(252, 253, 191)-rgb(231, 82, 99)-rgb(183, 55, 121)').style({
+                    stroke: 'rgb(183, 55, 121)'
+                }).label('name', {
+                    offset: 0,
+                    textStyle: function textStyle(text, item) {
+                        if (item.hasChildren) {
+                            return {
+                                opacity: 0
+                            };
+                        }
+                        return {
+                            textBaseline: 'middle',
+                            fill: 'grey',
+                            fontSize: 9,
+                            textAlign: 'center'
+                        };
+                    }
+                });
+                chart.render();
+            });
+
+            /* ************************************************************ */
             var chart = new G2.Chart({
                 container: 'keyword_chart',
                 forceFit: true,
