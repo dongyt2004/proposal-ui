@@ -21,7 +21,7 @@
     "parcel-bundler": "1.12.4"
   },
   "dependencies": {
-    "express": "4.17.1",
+    "express": "4.17.3",
     "body-parser": "1.19.0",
     "adaro": "1.0.4"
   }
